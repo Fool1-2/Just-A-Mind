@@ -3,19 +3,33 @@
 --- !u!78 &1
 TagManager:
   serializedVersion: 2
-  tags: []
+  tags:
+  - hand
+  - vine
+  - Ground
+  - CameraManager
+  - BonusCrystal
+  - Spike
+  - Spikes
+  - Guide
+  - sfx
+  - MusicChange
+  - GroundRay
+  - MusicChange2
+  - ThoughtBubble
+  - GM
   layers:
   - Default
   - TransparentFX
   - Ignore Raycast
-  - 
+  - Interactable
   - Water
   - UI
-  - 
-  - 
-  - 
-  - 
-  - 
+  - Ground
+  - Vine
+  - Respawn
+  - Player
+  - Rock
   - 
   - 
   - 

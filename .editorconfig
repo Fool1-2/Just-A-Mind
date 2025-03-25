@@ -1,0 +1,4 @@
+[*.cs]
+
+# CS1718: Comparison made to same variable
+dotnet_diagnostic.CS1718.severity = error

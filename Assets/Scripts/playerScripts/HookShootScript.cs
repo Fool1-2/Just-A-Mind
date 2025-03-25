@@ -6,21 +6,34 @@ using UnityEngine;
 public class HookShootScript : MonoBehaviour
 {
 	#region Hookshot
+	
+	#region General and Player Object Based stuff
+	[Header("General and Player Object Based stuff")]
 	public Rigidbody2D playersRB2D;
+	public PlayerController pc;
+	public GameObject Player;
+	public Transform playerTransform;
+	#endregion
 
-    public float hookshotRange; // Sets the range the hookshot can go
+	#region Distance and Speed
+	[Header("Distance and Speed")]
+	public float hookshotRange; // Sets the range the hookshot can go
 	public float hookshotSpeed; // Sets how fast you're going towards your hookshot
-	public float distance = 3.5f;
+	#endregion
 
-	public LayerMask grappleLayer;
-
-	public LineRenderer LR;
-
+	#region Searching for Hookshot Point
+	[Header("Vine Search")]
 	public Vector2 hookShotTarget; // Where you are hook shooting to
-
 	public Transform spherePoint;
-	public Transform grapplePoint;
+	public LayerMask grappleLayer;
+	public LineRenderer LR;
+	public Collider2D vineCol;
+	public GameObject grabOn;
+	#endregion
 
+
+	#region Hookshotting and Connection Bools
+	[Header("Hookshotting and Connection Bools")]
 	public bool areYouHookShooting = false; // Are you hook shooting?
 	public bool isConnected = false;
 	#endregion
@@ -28,11 +41,16 @@ public class HookShootScript : MonoBehaviour
 	#region Keycodes
 	public KeyCode hookShotKey;
 	#endregion
+	#endregion
 
 	// Start is called before the first frame update
 	void Start()
 	{
 		playersRB2D = GetComponent<Rigidbody2D>();
+		Player = GameObject.Find("Player");
+		pc = GetComponent<PlayerController>();
+		playerTransform = Player.GetComponent<Transform>();
+		LR = GetComponent<LineRenderer>();
 		LR.enabled = false;
 	}
 
@@ -56,30 +74,53 @@ public class HookShootScript : MonoBehaviour
 
 	public void StartHookShot()
 	{
-		RaycastHit2D hit = Physics2D.CircleCast(spherePoint.position, hookshotRange, Vector2.right, distance, grappleLayer);
-		isConnected = grapplePoint != null;
+		
+		//Change this to OverlapCircleAll so that it can cycle through a list and choose the closet one
+		//Add Raycast in order to not make it break while going through walls 
+
+		pc.vineCol = Physics2D.OverlapCircle(spherePoint.transform.position, hookshotRange, grappleLayer); //set circleCol to Overlap Cirlce
+
+		if (pc.vineCol != null)
+		{
+			Debug.Log("Vine at index " + pc.vineCol + " is within the circle cast.");
+		}
+
+
+		if ((pc.vineCol == pc.grabOn || pc.vineCol == null)) //if cirlce collider is equal or if circle collider is equal to null return
+		{
+			isConnected = false;
+			return; //ensure that that there's never a null in the spawner
+		}
+
+		else if ((pc.vineCol != pc.grabOn && pc.vineCol != null))
+		{
+			pc.grabOn = pc.vineCol.gameObject;
+			isConnected = true;
+		}
 
 		if (isConnected) // If the cirlce hits something that is in the hook shot range and is in the ground layer
 		{
 			areYouHookShooting = true; // You are hook shooting
-			hookShotTarget = grapplePoint.position; // Hook shot target is equal to the point the raycast hit
+			hookShotTarget = pc.grabOn.transform.position; // Hook shot target is equal to the point the raycast hit
 
 			LR.enabled = true; // Line Renderer is enabled
 			LR.SetPosition(0, transform.position); // Starts at grapple tip
-			LR.SetPosition(1, grapplePoint.position); // Ends at the target
+			LR.SetPosition(1, pc.grabOn.transform.position); // Ends at the target
 		}
-
+		
 	}
+
+	
 
 	public void HookshotMovement()
 	{
 		Vector2 hookshotDirection = (hookShotTarget - (Vector2)transform.position).normalized; // Fire off a vector 2 at the shooting target subtracting its transform.position at a magnitude of 1
-		playersRB2D.velocity = hookshotDirection * hookshotSpeed; // Shoot the player in the hookshotDirection at the hookshootSpeed
+		playersRB2D.AddForce(hookshotDirection * hookshotSpeed * Time.deltaTime, ForceMode2D.Impulse); // Shoot the player in the hookshotDirection at the hookshootSpeed
 
 		LR.SetPosition(0, transform.position);
-		LR.SetPosition(1, grapplePoint.position);
+		LR.SetPosition(1, pc.grabOn.transform.position);
 
-		if (Vector2.Distance(transform.position, grapplePoint.position) < 1) // If the distance from the transform.position and hookShotTarget is less than 1
+		if (Vector2.Distance(transform.position, pc.grabOn.transform.position) < 1) // If the distance from the transform.position and hookShotTarget is less than 1
 		{
 			EndHookshot();
 		}
@@ -97,5 +138,4 @@ public class HookShootScript : MonoBehaviour
 		Gizmos.color = Color.red;
 		Gizmos.DrawWireSphere(spherePoint.position, hookshotRange);
 	}
-
 }
