@@ -34,13 +34,35 @@ public class TestManager : MonoBehaviour
     // Start is called before the first frame update
     
     private void Start() {
-        player = GameObject.FindGameObjectWithTag("Player");
-        pc = player.GetComponent<PlayerController>();
-        respawnAnim.gameObject.SetActive(false);
+        try
+        {
+            player = GameObject.FindGameObjectWithTag("Player");
+            pc = player.GetComponent<PlayerController>();
+        }
+        catch (System.Exception)
+        {
+            return;
+        }
+        try
+        {
+            respawnAnim.gameObject.SetActive(false);
+        }
+        catch (System.Exception)
+        {
+            
+            return;
+        }
         //buttonCotainer = GameObject.Find("ContentArea");
         //buttonCotainer.SetActive(false);
         exitBall.SetActive(false);
-        buttonConfig = false;
+        try
+        {
+            buttonConfig = false;
+        }
+        catch (System.Exception)
+        {
+            return;
+        }
 
         try
         {
@@ -67,7 +89,10 @@ public class TestManager : MonoBehaviour
         }else
         {
             Time.timeScale = 1;
-            pauseMenu.SetActive(false);
+            if (pauseMenu != null)
+            {
+                pauseMenu.SetActive(false);
+            }
         }
 
         if (exit)
@@ -95,6 +120,10 @@ public class TestManager : MonoBehaviour
         {
             throw;
         }
+    }
+
+    public void ChangeScene(int dirScene){
+        StartCoroutine(Transition(dirScene));
     }
 
     private IEnumerator Transition(int scene){
